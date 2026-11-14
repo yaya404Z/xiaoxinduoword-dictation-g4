@@ -8,7 +8,7 @@
 | 平台 | 文件 | 链接 |
 | --- | --- | --- |
 | 网页版（推荐，免安装） | 打开就能玩 | https://yaya404z.github.io/xiaoxinduoword-dictation-g4/ |
-| Windows | `setup-1.0.3.exe` | https://github.com/yaya404Z/xiaoxinduoword-dictation-g4/releases/download/1.0.3/setup-1.0.3.exe |
+| Windows | `setup-1.0.4.exe` | https://github.com/yaya404Z/xiaoxinduoword-dictation-g4/releases/download/1.0.4/setup-1.0.4.exe |
 | 安卓（暂为 1.0.2） | `app-1.0.2.apk` | https://github.com/yaya404Z/xiaoxinduoword-dictation-g4/releases/download/1.0.2/app-1.0.2.apk |
 
 也可以直接看 [Releases](https://github.com/yaya404Z/xiaoxinduoword-dictation-g4/releases)。
@@ -25,12 +25,12 @@
 - 积分：存本机，原来攒的会保留
 - 积分商城：暂未开放
 - 清除积分：需要密码，按钮会疯狂乱窜，第 20 下才抓到
-- 自动检查更新：打开时比对最新发布，有新版本在顶部提示「去升级 / 以后再说」
+- 检查更新：标题下面有「检查更新」按钮，点一下手动比对最新版本；打开时也会自动比对一次，有新版本在顶部提示「去升级 / 以后再说」
 
 ## 自己发新版
 
-1. 改好程序后，把文件名带上版本号：`setup-1.0.4.exe`
-2. 在 Releases 里发一个新的 tag（如 `1.0.4`），把文件传进附件
+1. 改好后把 `APP_VERSION` 加一，文件名带上版本号：`setup-1.0.5.exe`
+2. 在 Releases 里发一个新的 tag（如 `1.0.5`），把文件传进附件
 3. 网页版同时更新 `docs/index.html`，Pages 会自动重新发布
 4. 已装的老版本打开就会自动提示升级
 
