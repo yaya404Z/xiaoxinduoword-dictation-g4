@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="单词听写">
+<link rel="apple-touch-icon" href="https://media.doubao.com/space/api/box/stream/download/all_by_mount_point/DLLtbuJUWoVEgnxmXRxc6CROnjg">
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>小耳朵单词站 · 四上英语听写</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23E4613C'/%3E%3Cpath d='M9 12v8h4l6 4V8l-6 4z' fill='%23fff'/%3E%3Cpath d='M23 11a6 6 0 0 1 0 10' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+  *{box-sizing:border-box}
+  :root{
+    --bg:#FBF5E9;
+    --card:#FFFDF8;
+    --ink:#2C2A26;
+    --ink-dim:#7A7368;
+    --line:#EADFCB;
+    --accent:#E4613C;
+    --accent-deep:#C4462A;
+    --teal:#2A8273;
+    --ok:#2F8A5B;
+    --bad:#C4462A;
+  }
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(900px 500px at 15% -10%, #FFF2DA 0%, rgba(255,242,218,0) 60%),
+      radial-gradient(700px 400px at 90% 0%, #F3E7CE 0%, rgba(243,231,206,0) 55%),
+      var(--bg);
+    color:var(--ink);
+    font-family:"Microsoft YaHei UI","PingFang SC","Hiragino Sans GB","Segoe UI",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    padding:22px 16px 48px;
+  }
+  .wrap{max-width:600px;margin:0 auto}
+
+  /* ---------- 顶部 ---------- */
+  .top{text-align:center;margin-bottom:18px}
+  .top .eyebrow{
+    display:inline-block;font-size:11px;letter-spacing:.22em;color:var(--accent);
+    font-weight:700;margin:0 0 8px;
+  }
+  .top h1{
+    font-size:26px;line-height:1.2;margin:0 0 8px;letter-spacing:.02em;
+    font-weight:800;
+  }
+  .top h1 span{color:var(--accent)}
+  .top .sub{margin:0;color:var(--ink-dim);font-size:13px;line-height:1.6}
+
+  /* ---------- 单元条 ---------- */
+  .units{
+    display:flex;gap:8px;overflow-x:auto;padding:4px 2px 10px;margin:0 -2px 12px;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  }
+  .units::-webkit-scrollbar{display:none}
+  .chip{
+    flex:0 0 auto;appearance:none;border:1px solid var(--line);background:#fff;
+    color:var(--ink-dim);border-radius:12px;padding:12px 16px;font-size:14px;line-height:1.1;
+    font-family:inherit;cursor:pointer;white-space:nowrap;touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+    transition:.18s ease;min-height:46px;display:flex;align-items:center;gap:6px;
+  }
+  .chip b{color:var(--ink);font-weight:700}
+  .chip:hover{border-color:#DCCBB0;color:var(--ink)}
+  .chip.on{background:var(--ink);border-color:var(--ink);color:#fff;box-shadow:0 6px 16px rgba(44,42,38,.18)}
+  .chip.on b{color:#fff}
+
+  /* ---------- 关卡条 ---------- */
+  .levels{display:flex;gap:8px;overflow-x:auto;padding:0 2px 10px;margin:0 -2px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .levels::-webkit-scrollbar{display:none}
+  .lv{
+    flex:0 0 auto;appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink-dim);
+    border-radius:11px;padding:9px 14px;font-size:13px;line-height:1.15;font-family:inherit;cursor:pointer;
+    min-height:44px;display:flex;flex-direction:column;justify-content:center;gap:3px;white-space:nowrap;
+    transition:.18s ease;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  }
+  .lv b{color:var(--ink);font-weight:700;font-size:13px}
+  .lv small{font-size:10.5px;color:var(--ink-dim);letter-spacing:.02em}
+  .lv:hover{border-color:#DCCBB0}
+  .lv.on{background:var(--teal);border-color:var(--teal)}
+  .lv.on b,.lv.on small{color:#fff}
+  .lv.hard{border-color:#EBD3B4;background:#FFF6E7}
+  .lv.hard.on{background:var(--accent);border-color:var(--accent)}
+
+  .timer{font-variant-numeric:tabular-nums;display:inline-flex;gap:8px;align-items:center}
+  .timer b{color:var(--teal)}
+  .timer.low b{color:var(--bad)}
+
+  /* ---------- 进度 ---------- */
+  .meta{
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:12px;color:var(--ink-dim);margin:0 4px 8px;letter-spacing:.02em;
+  }
+  .meta b{color:var(--ink);font-variant-numeric:tabular-nums}
+  .bar{height:7px;background:#EFE3CD;border-radius:99px;overflow:hidden;margin:0 4px 16px}
+  .bar span{display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--accent),#F0913F);transition:width .35s ease}
+
+  /* ---------- 主卡 ---------- */
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:22px;
+    padding:24px 20px 22px;box-shadow:0 12px 34px rgba(120,98,66,.10),0 2px 0 #fff inset;
+  }
+  .kicker{
+    text-align:center;font-size:10.5px;letter-spacing:.24em;color:var(--ink-dim);
+    font-weight:700;margin:0 0 4px;
+  }
+  .card h2{
+    text-align:center;font-size:15px;font-weight:600;color:var(--ink-dim);
+    margin:0 0 20px;letter-spacing:.02em;
+  }
+
+  .orb-area{position:relative;display:grid;place-items:center;height:150px;margin-bottom:6px}
+  .ring{
+    position:absolute;inset:0;margin:auto;width:118px;height:118px;border-radius:50%;
+    border:1.5px solid rgba(228,97,60,.28);opacity:0;pointer-events:none;
+  }
+  .orb.is-speaking .ring{animation:pulse 1.6s ease-out infinite}
+  .orb.is-speaking .ring:nth-child(2){animation-delay:.5s}
+  .orb.is-speaking .ring:nth-child(3){animation-delay:1s}
+  @keyframes pulse{
+    0%{transform:scale(.85);opacity:.6}
+    80%{transform:scale(1.55);opacity:0}
+    100%{opacity:0}
+  }
+  .orb{
+    position:relative;z-index:1;width:112px;height:112px;border-radius:50%;border:0;cursor:pointer;
+    background:radial-gradient(120% 120% at 30% 22%,#FF8B5E 0%,var(--accent) 45%,var(--accent-deep) 100%);
+    box-shadow:0 14px 30px rgba(196,70,42,.32),0 0 0 8px #FFF1E3;
+    display:grid;place-items:center;color:#fff;transition:transform .16s ease,box-shadow .25s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .orb:hover{transform:translateY(-2px)}
+  .orb:active{transform:scale(.96)}
+  .orb svg{width:46px;height:46px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .orb.is-speaking{animation:breathe 1.2s ease-in-out infinite}
+  @keyframes breathe{0%,100%{box-shadow:0 14px 30px rgba(196,70,42,.32),0 0 0 8px #FFF1E3}50%{box-shadow:0 16px 36px rgba(196,70,42,.42),0 0 0 13px #FFE7D5}}
+
+  .speak-tools{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+  .tbtn{
+    appearance:none;border:1px solid var(--line);background:#FCF6EA;color:var(--ink);
+    font-family:inherit;font-size:14px;border-radius:12px;padding:12px 16px;min-height:48px;
+    cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+    transition:.16s ease;display:inline-flex;align-items:center;gap:6px;
+  }
+  .tbtn:hover{background:#F7EDDC;border-color:#DCCBB0}
+  .tbtn.on{background:var(--teal);border-color:var(--teal);color:#fff}
+  .tbtn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+  .audio-hint{
+    text-align:center;font-size:12.5px;color:var(--ink-dim);margin:0 0 16px;min-height:18px;line-height:1.5;
+  }
+  .audio-hint.warn{color:var(--bad)}
+
+  /* 提示 */
+  .hint-wrap{text-align:center;margin-bottom:14px}
+  .peek{
+    appearance:none;background:none;border:0;border-bottom:1px dashed #CBB9A0;color:var(--ink-dim);
+    font-family:inherit;font-size:14px;padding:9px 4px;margin:4px 0 0;cursor:pointer;
+  }
+  .peek:hover{color:var(--accent);border-color:var(--accent)}
+  .hintbox{
+    margin-top:10px;background:#FBF1DF;border:1px solid var(--line);border-radius:14px;
+    padding:12px 14px;animation:fade .2s ease;
+  }
+  .hintbox .zh{font-size:14.5px;font-weight:600;margin:0 0 6px}
+  .hintbox .blank{
+    font-family:"SFMono-Regular",Consolas,"Courier New",monospace;font-size:17px;letter-spacing:.14em;
+    color:var(--teal);margin:0;word-break:break-all;
+  }
+  @keyframes fade{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+
+  /* 输入 */
+  .field{position:relative;margin-bottom:12px}
+  #answer{
+    width:100%;font-family:inherit;font-size:22px;line-height:1.3;
+    padding:18px 16px;border-radius:16px;border:1.5px solid var(--line);
+    background:#fff;color:var(--ink);outline:none;transition:.16s ease;
+    text-align:center;letter-spacing:.02em;
+  }
+  #answer::placeholder{color:#B7AB98;font-size:15px;letter-spacing:0}
+  #answer:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(228,97,60,.13)}
+  #answer.right{border-color:var(--ok);background:#F2FAF4}
+  #answer.wrong{border-color:var(--bad);background:#FEF4F1}
+
+  .tip{text-align:center;font-size:12.5px;color:#A79B87;margin:0 0 16px}
+  .tip kbd{
+    font-family:inherit;background:#F1E7D5;border-radius:5px;padding:1px 5px;font-size:11px;color:#7A7368;
+  }
+
+  .actions{display:flex;gap:12px}
+  .btn-primary{
+    flex:1;appearance:none;border:0;border-radius:16px;padding:18px 20px;min-height:62px;
+    background:linear-gradient(180deg,#EE7150,var(--accent));color:#fff;font-family:inherit;
+    font-size:18px;font-weight:700;cursor:pointer;touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+    box-shadow:0 8px 18px rgba(196,70,42,.26);transition:.16s ease;letter-spacing:.02em;
+  }
+  .btn-primary:hover{filter:brightness(1.04);transform:translateY(-1px)}
+  .btn-primary:active{transform:translateY(1px)}
+  .btn-primary.next{background:linear-gradient(180deg,#36907F,#27796B);box-shadow:0 8px 18px rgba(42,130,115,.24)}
+  .btn-ghost{
+    appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink-dim);
+    font-family:inherit;font-size:16px;border-radius:16px;padding:0 24px;min-height:62px;
+    cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+    transition:.16s ease;white-space:nowrap;
+  }
+  .btn-ghost:hover{background:#FAF4E8;color:var(--ink);border-color:#DCCBB0}
+
+  .feedback{
+    margin-top:16px;border-radius:14px;padding:13px 15px;font-size:14px;line-height:1.6;
+    animation:fade .2s ease;
+  }
+  .feedback.ok{background:#F0FAF4;border:1px solid #CDE9D8;color:#22694A}
+  .feedback.no{background:#FEF5F2;border:1px solid #F6D6CB;color:#9C3A22}
+  .feedback .ans{
+    font-size:19px;font-weight:800;letter-spacing:.04em;margin-right:6px;
+    font-family:"SFMono-Regular",Consolas,"Segoe UI",monospace;
+  }
+  .feedback .zh{color:var(--ink-dim);font-size:12.5px;margin-left:4px}
+
+  /* ---------- 结束页 ---------- */
+  .card.end{text-align:center;padding:30px 22px 26px}
+  .score{
+    font-size:44px;font-weight:800;line-height:1;margin:6px 0 6px;color:var(--accent);
+    font-variant-numeric:tabular-nums;
+  }
+  .score small{font-size:16px;color:var(--ink-dim);font-weight:600}
+  .end h2{font-size:18px;font-weight:800;margin:12px 0 4px;color:var(--ink)}
+  .end .line{color:var(--ink-dim);font-size:13px;margin:0 0 22px}
+  .end-actions{display:flex;flex-direction:column;gap:9px;margin-top:6px}
+  .end-actions .btn-ghost{min-height:60px}
+  .wrong-block{text-align:left;margin-top:24px;border-top:1px dashed var(--line);padding-top:18px}
+  .wrong-block h3{font-size:13px;margin:0 0 10px;color:var(--ink-dim);letter-spacing:.06em;font-weight:700}
+  .wrong-list{display:flex;flex-wrap:wrap;gap:7px}
+  .wchip{
+    appearance:none;border:1px solid #F0D9CF;background:#FEF7F4;border-radius:12px;
+    padding:11px 15px;font-family:inherit;font-size:15px;color:#9C3A22;cursor:pointer;
+    min-height:46px;display:inline-flex;align-items:center;gap:7px;touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .wchip small{color:#B98A76;font-size:11.5px}
+  .wchip:hover{background:#FDEDE7;border-color:#EBBFAE}
+
+  .foot{text-align:center;font-size:11.5px;color:#A2947F;margin-top:22px;line-height:1.7}
+
+  /* ---------- 设备测试（右下角） ---------- */
+  .test-fab{
+    position:fixed;right:16px;bottom:16px;z-index:30;
+    appearance:none;border:1px solid var(--ink);background:var(--ink);color:#fff;
+    font-family:inherit;font-size:13.5px;font-weight:700;letter-spacing:.04em;
+    border-radius:14px;padding:0 16px;min-height:48px;cursor:pointer;
+    box-shadow:0 10px 24px rgba(44,42,38,.24);touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .test-fab:hover{background:#3C3833;border-color:#3C3833}
+  .test-fab.on{background:var(--accent);border-color:var(--accent);box-shadow:0 10px 24px rgba(228,97,60,.3)}
+
+  .test-panel{
+    position:fixed;right:16px;bottom:74px;z-index:31;
+    width:min(320px, calc(100vw - 32px));
+    background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:16px 16px 14px;box-shadow:0 20px 44px rgba(44,42,38,.22);
+    animation:fade .18s ease;
+  }
+  .tp-title{font-size:12px;letter-spacing:.16em;color:var(--accent);font-weight:800;margin:0 0 12px}
+  .tp-block{border-top:1px dashed var(--line);padding:12px 0 2px}
+  .tp-block:first-of-type{border-top:0;padding-top:0}
+  .tp-label{font-size:13.5px;font-weight:800;margin:0 0 8px;color:var(--ink)}
+  .tp-btn{
+    appearance:none;width:100%;border:1px solid var(--accent);background:var(--accent);color:#fff;
+    font-family:inherit;font-size:15px;font-weight:700;border-radius:13px;
+    min-height:50px;padding:0 14px;cursor:pointer;touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .tp-btn:hover{background:var(--accent-deep);border-color:var(--accent-deep)}
+  .tp-btn.ghost{background:#fff;color:var(--ink-dim);border-color:var(--line);font-weight:600;min-height:46px;margin-top:8px}
+  .tp-btn.ghost:hover{background:#FAF4E8;color:var(--ink);border-color:#DCCBB0}
+  .tp-note{font-size:12.5px;color:var(--ink-dim);line-height:1.6;margin:8px 0 0}
+  .tp-note.warn{color:#B5482C}
+  .tp-note b{color:var(--ink);letter-spacing:.14em}
+  .tp-keys{display:flex;gap:6px;margin:10px 0 10px;flex-wrap:wrap}
+  .tp-key{
+    flex:1 1 0;min-width:30px;min-height:40px;display:flex;align-items:center;justify-content:center;
+    border:1px solid var(--line);border-radius:10px;background:#fff;
+    font-family:"SFMono-Regular",Consolas,"Segoe UI",monospace;font-size:15px;font-weight:700;
+    color:#B7AC9B;text-transform:uppercase;
+  }
+  .tp-key.now{border-color:var(--accent);color:var(--accent);background:#FEF4EF}
+  .tp-key.ok{border-color:#CDE9D8;background:#F0FAF4;color:var(--ok)}
+  .tp-input{
+    width:100%;appearance:none;border:1px solid var(--line);border-radius:12px;background:#fff;
+    font-family:"SFMono-Regular",Consolas,"Segoe UI",monospace;font-size:16px;letter-spacing:.2em;
+    color:var(--ink);padding:12px 14px;min-height:50px;text-transform:uppercase;
+  }
+  .tp-input:focus{outline:none;border-color:#DCCBB0}
+
+  /* ---------- 顶部：发现新版本 ---------- */
+  .ubar{
+    position:fixed;
+    left:0;right:0;top:0;
+    z-index:40;
+    display:none;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px calc(10px + env(safe-area-inset-top, 0px));
+    padding-top:calc(10px + env(safe-area-inset-top, 0px));
+    background:linear-gradient(180deg,#2C2A26,#3A3730);
+    color:#FFFDF8;
+    box-shadow:0 6px 20px rgba(0,0,0,.22);
+  }
+  .ubar.on{display:flex}
+  .ubar-txt{
+    flex:1 1 auto;min-width:0;font-size:13px;line-height:1.45;
+    letter-spacing:.01em;
+  }
+  .ubar-txt b{color:#FFC08A}
+  .ubar-go{
+    flex:0 0 auto;appearance:none;border:0;border-radius:11px;
+    background:var(--accent);color:#fff;font-family:inherit;font-size:13.5px;font-weight:700;
+    padding:10px 15px;min-height:44px;cursor:pointer;touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;white-space:nowrap;
+  }
+  .ubar-go:active{transform:translateY(1px)}
+  .ubar-x{
+    flex:0 0 auto;appearance:none;border:1px solid rgba(255,253,248,.28);border-radius:11px;
+    background:transparent;color:rgba(255,253,248,.8);font-family:inherit;font-size:12.5px;
+    padding:10px 12px;min-height:44px;cursor:pointer;touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;white-space:nowrap;
+  }
+
+  @media (max-width:400px){
+    body{padding:16px 12px 40px}
+    .top h1{font-size:22px}
+    .card{padding:20px 15px 18px;border-radius:18px}
+    .orb-area{height:134px}
+    .orb{width:100px;height:100px}
+    .orb svg{width:42px;height:42px}
+    #answer{font-size:18px}
+  }
+
+  /* 右上角版权署 */
+  .credit{
+    position:fixed;
+    top:calc(10px + env(safe-area-inset-top, 0px));
+    right:14px;
+    z-index:6;
+    margin:0;
+    padding:4px 9px;
+    border-radius:999px;
+    background:rgba(255,253,248,.78);
+    border:1px solid rgba(44,42,38,.10);
+    font-size:12px;
+    line-height:1.4;
+    letter-spacing:.02em;
+    color:var(--ink-dim);
+    pointer-events:none;
+    user-select:none;
+  }
+
+  /* 左上角积分 */
+  .points{
+    position:fixed;
+    top:calc(10px + env(safe-area-inset-top, 0px));
+    left:14px;
+    z-index:6;
+    margin:0;
+    padding:5px 12px;
+    border-radius:999px;
+    background:rgba(255,253,248,.92);
+    border:1px solid rgba(228,97,60,.30);
+    font-size:12px;
+    letter-spacing:.02em;
+    color:var(--ink);
+    box-shadow:0 2px 8px rgba(44,42,38,.08);
+    user-select:none;
+  }
+  .points b{font-size:16px;font-weight:700;color:#E4613C;margin-left:3px;font-variant-numeric:tabular-nums}
+  .points.bump{animation:ptbump .36s ease}
+  @keyframes ptbump{0%{transform:scale(1)}40%{transform:scale(1.15)}100%{transform:scale(1)}}
+
+  /* 左下角积分商城 */
+  .shop-fab{
+    position:fixed;
+    left:14px;
+    bottom:calc(16px + env(safe-area-inset-bottom, 0px));
+    z-index:6;
+    padding:9px 15px;
+    border-radius:999px;
+    border:1px solid rgba(44,42,38,.16);
+    background:#FFFDF8;
+    color:var(--ink);
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    box-shadow:0 3px 12px rgba(44,42,38,.10);
+    touch-action:manipulation;
+  }
+  .shop-fab:active{transform:translateY(1px)}
+  .shop-toast{
+    position:fixed;
+    left:14px;
+    bottom:calc(60px + env(safe-area-inset-bottom, 0px));
+    z-index:7;
+    padding:9px 14px;
+    border-radius:12px;
+    background:rgba(44,42,38,.92);
+    color:#FFFDF8;
+    font-size:13px;
+    line-height:1.55;
+    box-shadow:0 6px 20px rgba(0,0,0,.18);
+    opacity:0;
+    transform:translateY(6px);
+    transition:opacity .18s ease, transform .18s ease;
+    pointer-events:none;
+    max-width:72vw;
+  }
+  .shop-toast.on{opacity:1;transform:translateY(0)}
+
+  /* 顶部中间：清除所有积分 */
+  .clear-fab{
+    position:fixed;
+    top:calc(10px + env(safe-area-inset-top, 0px));
+    left:50%;
+    transform:translateX(-50%);
+    z-index:6;
+    padding:5px 11px;
+    border-radius:999px;
+    border:1px solid rgba(44,42,38,.16);
+    background:rgba(255,253,248,.92);
+    color:var(--ink-dim);
+    font-size:12px;
+    white-space:nowrap;
+    cursor:pointer;
+    box-shadow:0 2px 8px rgba(44,42,38,.08);
+    touch-action:manipulation;
+  }
+  .clear-fab:active{transform:translateX(-50%) translateY(1px)}
+
+  .pw-mask{
+    position:fixed;
+    inset:0;
+    z-index:30;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:rgba(30,28,26,.45);
+  }
+  .pw-mask.on{display:flex}
+  .pw-card{
+    width:min(420px, 92vw);
+    background:#FFFDF8;
+    border-radius:18px;
+    padding:18px;
+    box-shadow:0 18px 50px rgba(0,0,0,.26);
+    text-align:center;
+  }
+  .pw-title{margin:0 0 4px;font-size:15px;font-weight:700;color:var(--ink)}
+  .pw-sub{margin:0 0 12px;font-size:12px;color:var(--ink-dim)}
+  .pw-dots{
+    height:32px;
+    line-height:32px;
+    letter-spacing:6px;
+    font-size:18px;
+    color:var(--ink);
+    border-bottom:1px dashed rgba(44,42,38,.22);
+    margin-bottom:12px;
+  }
+  .pw-keys{display:grid;grid-template-columns:repeat(7, 1fr);gap:6px}
+  .pw-key{
+    padding:10px 0;
+    border-radius:10px;
+    border:1px solid rgba(44,42,38,.14);
+    background:#fff;
+    color:var(--ink);
+    font-size:14px;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  .pw-key:active{background:#F3EFE7}
+  .pw-err{height:16px;margin-top:8px;font-size:12px;color:#C0392B}
+  .pw-confirm{
+    position:fixed;
+    inset:0;
+    z-index:32;
+    display:none;
+    background:rgba(30,28,26,.86);
+  }
+  .pw-confirm.on{display:block}
+  .pw-count{
+    position:absolute;
+    left:0; right:0;
+    top:calc(30px + env(safe-area-inset-top, 0px));
+    margin:0;
+    text-align:center;
+    font-size:17px;
+    font-weight:700;
+    color:#FFE8D6;
+    letter-spacing:.03em;
+  }
+  .pw-count.catchable{
+    cursor:pointer;
+    color:#FFD9B8;
+    text-shadow:0 0 12px rgba(228,97,60,.55);
+    touch-action:manipulation;
+  }
+  .pw-tip{
+    position:absolute;
+    left:0; right:0;
+    top:calc(58px + env(safe-area-inset-top, 0px));
+    margin:0;
+    text-align:center;
+    font-size:12px;
+    color:rgba(255,232,214,.68);
+  }
+  .pw-confirm-btn{
+    position:absolute;
+    left:50%;
+    top:40%;
+    padding:14px 26px;
+    border:none;
+    border-radius:14px;
+    background:#E4613C;
+    color:#fff;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    touch-action:manipulation;
+    box-shadow:0 8px 24px rgba(0,0,0,.28);
+    transition:left .22s ease, top .22s ease;
+    white-space:nowrap;
+  }
+  .pw-confirm-btn:active{transform:scale(.96)}
+  .pw-confirm-btn.sprint{
+    transition:none;
+    padding:10px 18px;
+    font-size:13px;
+    border-radius:12px;
+  }
+  .pw-self-cancel{
+    position:absolute;
+    left:50%;
+    bottom:calc(26px + env(safe-area-inset-bottom, 0px));
+    transform:translateX(-50%);
+    padding:10px 22px;
+    border-radius:999px;
+    border:1px solid rgba(255,232,214,.35);
+    background:transparent;
+    color:rgba(255,232,214,.85);
+    font-size:13px;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  .pw-actions{display:flex;gap:8px;margin-top:10px}
+  .pw-actions button{
+    flex:1;
+    padding:12px 0;
+    border:none;
+    border-radius:12px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  .pw-cancel{background:#EDE9E1;color:var(--ink)}
+  .pw-ok{background:#E4613C;color:#fff}
+
+  @media (max-width: 400px){
+    .credit{font-size:10px}
+    .points{font-size:10px;padding:4px 9px}
+    .points b{font-size:14px}
+    .clear-fab{font-size:10px;padding:4px 8px}
+  }
+</style>
+</head>
+<body>
+<p class="credit">版权归为张宜霖</p>
+<p class="points" id="pointsBadge" aria-live="polite">积分<b id="pointsNum">0</b></p>
+
+<div class="ubar" id="updateBar">
+  <span class="ubar-txt" id="updateTxt">发现新版本，要不要升级一下？</span>
+  <button class="ubar-go" id="updateGo" type="button">去升级</button>
+  <button class="ubar-x" id="updateLater" type="button">以后再说</button>
+</div>
+
+<div class="wrap">
+  <header class="top">
+    <p class="eyebrow">LISTEN &amp; SPELL</p>
+    <h1>小耳朵<span>单词站</span></h1>
+    <p class="sub">外研版（三起）2024 新教材 · 四年级上册 Unit 1–6 · 听发音，填空拼写</p>
+  </header>
+
+  <div class="units" id="units" role="tablist" aria-label="选择单元"></div>
+  <div class="levels" id="levels" role="tablist" aria-label="选择关卡"></div>
+
+  <div class="meta">
+    <span id="unitLabel">全册混合</span>
+    <span class="timer" id="timerWrap" hidden>总 <b id="timerAll">05:00</b> · 本题 <b id="timerQ">10</b></span>
+    <span><b id="qNow">0</b> / <b id="qAll">10</b></span>
+  </div>
+  <div class="bar"><span id="barFill"></span></div>
+
+  <section id="playView" aria-label="听写">
+    <div class="card">
+      <p class="kicker">LISTEN &amp; SPELL</p>
+      <h2>听发音，把单词写出来</h2>
+
+      <div class="orb-area">
+        <span class="ring"></span><span class="ring"></span><span class="ring"></span>
+        <button class="orb" id="orb" type="button" aria-label="播放单词发音">
+          <svg viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16 9a4.2 4.2 0 0 1 0 6"/><path d="M18.8 6.4a8 8 0 0 1 0 11.2"/></svg>
+        </button>
+      </div>
+
+      <div class="speak-tools">
+        <button class="tbtn" id="replay" type="button">再听一遍</button>
+        <button class="tbtn" id="slowBtn" type="button">慢速</button>
+        <button class="tbtn" id="accentBtn" type="button">英音 UK</button>
+      </div>
+      <p class="audio-hint" id="audioHint">点喇叭听发音</p>
+
+      <div class="hint-wrap">
+        <button class="peek" id="peekBtn" type="button">看提示 · 中文意思和首字母</button>
+        <div class="hintbox" id="hintBox" hidden>
+          <p class="zh" id="hintZh"></p>
+          <p class="blank" id="hintBlank"></p>
+        </div>
+      </div>
+
+      <div class="field">
+        <input id="answer" type="text" inputmode="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="在这里输入单词…">
+      </div>
+      <p class="tip">写完以后，点下面的按钮，不用按回车</p>
+
+      <div class="actions">
+        <button class="btn-primary" id="mainBtn" type="button">检查拼写</button>
+        <button class="btn-ghost" id="skipBtn" type="button">跳过</button>
+      </div>
+
+      <div class="feedback" id="fb" hidden></div>
+    </div>
+    <p class="foot">拼错没关系，错词会记在最后。<br><span id="verLine">v1.0.0</span></p>
+  </section>
+
+  <section id="endView" aria-label="本轮结果" hidden>
+    <div class="card end">
+      <p class="kicker">ROUND COMPLETE</p>
+      <p class="score"><b id="endPct">0</b><small>%</small></p>
+      <h2 id="endTitle">这一组完成啦</h2>
+      <p class="line" id="endLine">答对 0 / 10</p>
+      <div class="end-actions">
+        <button class="btn-primary" id="againBtn" type="button">再来一组</button>
+        <button class="btn-ghost" id="wrongBtn" type="button" hidden>只练这些错词</button>
+        <button class="btn-ghost" id="backBtn" type="button">换一个单元</button>
+      </div>
+      <div class="wrong-block" id="wrongBlock" hidden>
+        <h3>错词 · 点一下可以再听</h3>
+        <div class="wrong-list" id="wrongList"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ===== 设备测试（右下角） ===== -->
+<button type="button" class="test-fab" id="testFab" aria-expanded="false" aria-controls="testPanel">设备测试</button>
+<div class="test-panel" id="testPanel" hidden>
+  <p class="tp-title">设备测试</p>
+
+  <div class="tp-block">
+    <p class="tp-label">① 扬声器</p>
+    <button type="button" class="tp-btn" id="spkBtn">播放测试语音</button>
+    <p class="tp-note" id="spkNote">听见英语朗读，说明扬声器正常</p>
+  </div>
+
+  <div class="tp-block">
+    <p class="tp-label">② 键盘</p>
+    <p class="tp-note">依次输入 <b>ZXCVBNM</b></p>
+    <div class="tp-keys" id="tpKeys"></div>
+    <input class="tp-input" id="tpInput" type="text" autocomplete="off" autocorrect="off"
+           autocapitalize="characters" spellcheck="false" maxlength="12" placeholder="在这里打字母">
+    <button type="button" class="tp-btn ghost" id="tpClear">清除重来</button>
+    <p class="tp-note" id="tpNote">七个字母全部变绿，说明键盘正常</p>
+  </div>
+</div>
+
+<button type="button" class="shop-fab" id="shopFab">积分商城</button>
+<div class="shop-toast" id="shopToast">积分商城暂未开放<br>奖品还在准备中，先攒积分</div>
+
+<button type="button" class="clear-fab" id="clearFab">清除所有积分</button>
+
+<div class="pw-mask" id="pwMask">
+  <div class="pw-card">
+    <p class="pw-title">清除所有积分</p>
+    <p class="pw-sub">输入管理密码后清零</p>
+    <div class="pw-dots" id="pwDots"></div>
+    <div class="pw-keys" id="pwKeys"></div>
+    <p class="pw-err" id="pwErr"></p>
+    <div class="pw-actions">
+      <button type="button" class="pw-cancel" id="pwCancel">取消</button>
+      <button type="button" class="pw-ok" id="pwOk">确定</button>
+    </div>
+  </div>
+</div>
+
+<div class="pw-confirm" id="pwConfirm">
+  <p class="pw-count" id="pwCount">还将确认 20 次</p>
+  <p class="pw-tip" id="pwTip">按钮会到处乱跑，点满 20 次才清零</p>
+  <button type="button" class="pw-confirm-btn" id="pwConfirmBtn">确认清零</button>
+  <button type="button" class="pw-self-cancel" id="pwSelfCancel">算了，取消</button>
+</div>
+
+<!-- ===== 安卓 WebView：用系统 TTS 顶替 speechSynthesis（Windows/浏览器里这段不生效） ===== -->
+<script>
+(function(){
+  if (!window.AndroidTTS) return;
+  function ShimUtterance(text){
+    this.text = String(text || '');
+    this.lang = 'en-US';
+    this.rate = 1;
+    this.voice = null;
+    this.onstart = null; this.onend = null; this.onerror = null;
+  }
+  window.SpeechSynthesisUtterance = ShimUtterance;
+  var voices = [{name:'Android English', lang:'en-GB'}, {name:'Android English US', lang:'en-US'}];
+  window.speechSynthesis = {
+    speaking:false, paused:false, pending:false, onvoiceschanged:null,
+    getVoices: function(){ return voices; },
+    speak: function(u){
+      try{
+        if (u.onstart) u.onstart();
+        AndroidTTS.speak(String(u.text || ''), String(u.lang || 'en-US'), Number(u.rate) || 1);
+        var ms = Math.max(800, String(u.text || '').length * 95);
+        setTimeout(function(){ if (u.onend) u.onend(); }, ms);
+      }catch(e){ if (u.onerror) u.onerror(e); }
+    },
+    cancel: function(){ try{ AndroidTTS.stop(); }catch(e){} },
+    pause: function(){}, resume: function(){}
+  };
+})();
+</script>
+
+<script>
+/* ============ 词表：外研版（三起）2024 新教材 四年级上册 ============ */
+const UNITS = [
+  { id:'u1', name:'Unit 1', title:'I love sports', words:[
+    ['sport','体育运动'],['jump','跳'],['high','高高地'],['far','远'],['ping-pong','乒乓球运动'],
+    ['volleyball','排球（运动）'],['across','从一边到另一边；穿过，越过'],['hope','希望'],['lose','失去'],
+    ['because','因为'],['because of','因为某人 / 某事物'],['cancer','癌（症）'],['other','别的，其他的'],
+    ['money','钱'],['hard','困难的'],['kind','亲切的；友好的'],['keep','持续；继续'],['month','一个月'],
+    ['ill','生病的'],['anymore','（不）再'],['year','年；年度'],['remember','纪念；记住'],['fail','失败'],
+    ['give','给予'],['give up','放弃'],['never','决不，永不'],['try','努力；尝试'],['try your best','尽最大努力'],
+    ['star','明星，最出色者'],['ability','才能；能力'],['player','运动员，选手，球员']
+  ]},
+  { id:'u2', name:'Unit 2', title:'Helping at home', words:[
+    ['phew','啊，哟，唉'],['wash','洗'],['dish','盘子，碟子'],['feed','喂养，给……食物'],['sweep','扫，打扫'],
+    ['floor','地板，地面'],['rubbish','垃圾'],['chore','家庭杂务'],['to-do list','待办清单'],
+    ['may','可以（表示允许）'],['outside','在室外，在外面'],['tidy','整洁的，整齐的'],['easy','容易的'],
+    ['clean','（把……）弄干净'],['woof','汪汪（狗吠声）'],['job','任务，事情'],['Good job!','干得好！真不错！'],
+    ['dirty','脏的'],['desk','书桌，写字台'],['wall','墙'],['again','又，再一次'],['also','除此之外，还'],
+    ['sunshine','阳光'],['must','应该'],['sometimes','有时'],['feel','感受到，觉得'],['tired','疲惫的，累的'],
+    ['helpful','乐于助人的'],['warm','（使）温暖起来'],['warm up','（使）变暖'],['house','房屋，房子'],
+    ['water','给……浇水'],['yard','庭院'],['helper','帮手；助手'],['pick','采，摘'],['pig','猪'],
+    ['cow','奶牛'],['cut','修剪'],['grass','草地；草，青草']
+  ]},
+  { id:'u3', name:'Unit 3', title:"What's the weather like?", words:[
+    ['weather','天气'],['sunny','阳光充足的'],['cloud','云'],['by','经过'],['cloudy','多云的，阴天的'],
+    ['wind','风'],['blow','吹，刮'],['windy','风大的；多风的'],['rain','雨'],['rainy','多雨的'],['snow','雪'],
+    ['any','任何一个'],['cold','冷的，寒冷的'],['or','或者'],['enjoy','享受……的乐趣'],['diary','日记'],
+    ['teacher','教师，老师'],['taste','有……的味道'],['ice cream','冰激凌，雪糕'],['real','真的，真正的'],
+    ['later','之后'],['December','十二月'],['coat','外套'],['turn','转身；转动'],['turn on','打开'],
+    ['TV','电视'],['report','报道']
+  ]},
+  { id:'u4', name:'Unit 4', title:'Wonderful seasons', words:[
+    ['wonderful','令人惊叹的，奇妙的'],['season','季节'],['spring','春天，春季'],['summer','夏天，夏季'],
+    ['autumn','秋天，秋季'],['winter','冬天，冬季'],['favourite','最喜欢的'],['birthday','生日'],['fly','放飞'],
+    ['happen','发生'],['snowstorm','雪暴，暴风雪'],['wait','等，等候'],['beach','海滩，沙滩'],['sea','海，海洋'],
+    ['equator','赤道'],['round','循环地，周而复始地'],['all year round','全年'],['quite','非常，十分'],
+    ['join','参与，加入']
+  ]},
+  { id:'u5', name:'Unit 5', title:"Let's go!", words:[
+    ['bus','公交车，公共汽车'],['car','汽车'],['train','火车，列车'],['city','城市'],['town','镇，城镇'],
+    ['ship','大船'],['plane','飞机'],['sky','天，天空'],['place','地方，地点'],['near','（距离）近的'],
+    ['travel','旅行'],['way','方式'],['picnic','野餐'],['minute','分钟'],['wear','穿；戴'],['live','住，居住'],
+    ['away','离开，相距'],['truck','货车，卡车'],['bamboo','竹，竹子'],['bike','自行车'],['ring','（钟、铃）鸣响'],
+    ['beep','（使）（汽车喇叭）鸣响'],['subway','地铁'],['whoosh','（呼呼地）飞快移动'],['tram','有轨电车'],
+    ['chug','（火车等）突突地前进']
+  ]},
+  { id:'u6', name:'Unit 6', title:'Find your way', words:[
+    ['wheel','车轮'],['left','向左，朝左'],['straight','笔直地'],['library','图书室；图书馆'],['cinema','电影院'],
+    ['hospital','医院'],['supermarket','超市'],['museum','博物馆，博物院'],['tomorrow','（在）明天'],
+    ['woman','成年女子，妇女'],['wish','愿望'],['step','步；一步'],['own','自己的'],["on one's own",'独立地'],
+    ['walk','走，行走'],['cross','横穿'],['careful','谨慎的'],['be careful','当心，小心'],['girl','女孩；女儿'],
+    ['underground','在地（面）下'],['aunt','姑母；姨母']
+  ]}
+];
+
+/* ============ 基础 ============ */
+const $ = s => document.querySelector(s);
+const queueOf = id => id === 'all'
+  ? UNITS.flatMap(u => u.words)
+  : UNITS.find(u => u.id === id).words;
+
+const S = { unit:'all', level:1, accent:'uk', slow:false, queue:[], i:0, ok:0, wrong:[], answered:false, w:null, timed:false };
+let ORB, voices = [];
+
+function norm(s){
+  return String(s || '').toLowerCase()
+    .replace(/[’‘]/g, "'")
+    .replace(/[^a-z0-9]/g, '');
+}
+
+/* ============ 单元条 ============ */
+function buildChips(){
+  const box = $('#units');
+  box.innerHTML = '';
+  const mk = (id, label, sub) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip' + (S.unit === id ? ' on' : '');
+    b.dataset.unit = id;
+    b.innerHTML = '<b>' + label + '</b>' + (sub ? '<span>' + sub + '</span>' : '');
+    b.addEventListener('click', () => selectUnit(id));
+    box.appendChild(b);
+  };
+  mk('all', '全册混合', '');
+  UNITS.forEach(u => mk(u.id, u.name, u.title));
+}
+
+function selectUnit(id){
+  S.unit = id;
+  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.dataset.unit === id));
+  buildLevels();
+  startLevel(S.level);
+}
+
+/* ============ 关卡：每个单元 5 关，第 5 关限时 ============ */
+function selectLevel(lv){
+  S.level = lv;
+  document.querySelectorAll('.lv').forEach(b => b.classList.toggle('on', b.dataset.level === String(lv)));
+  startLevel(lv);
+}
+
+function levelPool(unitId, lv){
+  const all = queueOf(unitId);
+  if (lv >= 5){
+    /* 最后一关：词最多、全单元里挑，打乱顺序 */
+    return shuffle(all).slice(0, Math.min(25, all.length));
+  }
+  /* 前四关：短的先来，越往后越长，难度递增 */
+  const sorted = all.slice().sort((a, b) => a[0].length - b[0].length);
+  const part = Math.ceil(sorted.length / 4);
+  const seg = sorted.slice((lv - 1) * part, lv * part);
+  return seg.length ? seg : sorted.slice(0, part);
+}
+
+function buildLevels(){
+  const box = $('#levels');
+  if (!box) return;
+  box.innerHTML = '';
+  for (let lv = 1; lv <= 5; lv++){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'lv' + (lv === 5 ? ' hard' : '') + (S.level === lv ? ' on' : '');
+    b.dataset.level = String(lv);
+    b.innerHTML = lv === 5
+      ? '<b>第 5 关</b><small>限时 5 分钟 · 每题 10 秒</small>'
+      : '<b>第 ' + lv + ' 关</b><small>' + levelPool(S.unit, lv).length + ' 个单词</small>';
+    b.addEventListener('click', () => selectLevel(lv));
+    box.appendChild(b);
+  }
+}
+
+function startLevel(lv){
+  S.level = lv || 1;
+  S.timed = S.level >= 5;
+  const pool = levelPool(S.unit, S.level);
+  startRound(pool, pool.length);
+}
+
+/* ============ 限时（第 5 关） ============ */
+let tAllTimer = null, tQTimer = null, tAllLeft = 0, tQLeft = 0;
+
+function fmtSec(s){
+  const m = Math.floor(Math.max(0, s) / 60), r = Math.max(0, s) % 60;
+  return String(m).padStart(2, '0') + ':' + String(r).padStart(2, '0');
+}
+
+function paintTimer(){
+  if (!S.timed) return;
+  $('#timerAll').textContent = fmtSec(tAllLeft);
+  $('#timerQ').textContent = String(Math.max(0, tQLeft));
+  $('#timerWrap').classList.toggle('low', tAllLeft <= 60 || tQLeft <= 3);
+}
+
+function clearTimers(){
+  if (tAllTimer){ clearInterval(tAllTimer); tAllTimer = null; }
+  if (tQTimer){ clearInterval(tQTimer); tQTimer = null; }
+  const w = $('#timerWrap');
+  if (w) w.hidden = true;
+}
+
+function startAllTimer(){
+  if (!S.timed) return;
+  $('#timerWrap').hidden = false;
+  tAllLeft = 300;
+  paintTimer();
+  tAllTimer = setInterval(() => {
+    tAllLeft--;
+    paintTimer();
+    if (tAllLeft <= 0){
+      clearTimers();
+      finish();
+    }
+  }, 1000);
+}
+
+function startQTimer(){
+  if (!S.timed) return;
+  if (tQTimer){ clearInterval(tQTimer); tQTimer = null; }
+  tQLeft = 10;
+  paintTimer();
+  tQTimer = setInterval(() => {
+    tQLeft--;
+    paintTimer();
+    if (tQLeft <= 0){
+      clearInterval(tQTimer); tQTimer = null;
+      timeUp();
+    }
+  }, 1000);
+}
+
+function timeUp(){
+  if (S.answered || !S.w) return;
+  S.answered = true;
+  S.wrong.push(S.w);
+  addPoints(-3);
+  stopSpeech();
+  const input = $('#answer');
+  input.className = 'wrong';
+  input.disabled = true;
+  const fb = $('#fb');
+  fb.hidden = false;
+  fb.className = 'feedback no';
+  fb.innerHTML = '时间到！正确答案是 <span class="ans">' + S.w[0] + '</span><span class="zh">' + S.w[1] + '</span>';
+  const btn = $('#mainBtn');
+  btn.textContent = '下一题';
+  btn.classList.add('next');
+  $('#skipBtn').hidden = true;
+  setTimeout(() => { if (S.w && S.queue[S.i] === S.w) nextQuestion(); }, 2200);
+}
+
+/* ============ 朗读 ============ */
+function loadVoices(){
+  if (!('speechSynthesis' in window)) return;
+  voices = (speechSynthesis.getVoices() || []).filter(v => /^en/i.test(v.lang || ''));
+}
+if ('speechSynthesis' in window){
+  loadVoices();
+  speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+function pickVoice(lang){
+  const pref = lang.toLowerCase();
+  return voices.find(v => (v.lang || '').replace('_','-').toLowerCase() === pref && v.localService !== false)
+      || voices.find(v => (v.lang || '').replace('_','-').toLowerCase() === pref)
+      || voices.find(v => (v.lang || '').toLowerCase().indexOf('en-gb') === 0)
+      || voices.find(v => /^en/i.test(v.lang || ''))
+      || null;
+}
+
+/* ============ 朗读：在线真人发音 + 系统语音，双保险 ============ */
+let audioEl = null;
+let speakToken = 0;
+let audioUnlocked = false;
+
+/* 手机浏览器禁止「非用户点击」自动出声：第一次碰屏幕时先解锁一次音频通道 */
+function unlockAudio(){
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  try{
+    if (!audioEl) audioEl = new Audio();
+    audioEl.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+    const p = audioEl.play();
+    if (p && typeof p.catch === 'function') p.catch(() => {});
+  }catch(e){}
+  try{ if (window.speechSynthesis) speechSynthesis.getVoices(); }catch(e){}
+}
+document.addEventListener('pointerdown', unlockAudio, true);
+document.addEventListener('touchstart', unlockAudio, true);
+document.addEventListener('click', unlockAudio, true);
+
+/* 在线发音用的文本：去掉会让接口 500 的标点，长句也能播 */
+function onlineText(t){
+  return String(t)
+    .replace(/[,\.!\?;:\(\)\[\]\\\/]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function canOnline(t){
+  const s = onlineText(t);
+  return s.length > 0 && s.length <= 70;
+}
+
+function audioUrl(text, lang){
+  const type = String(lang).toLowerCase().indexOf('gb') >= 0 ? 1 : 2;
+  return 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(String(text).trim()) + '&type=' + type;
+}
+
+function stopSpeech(){
+  speakToken++;
+  try{ if ('speechSynthesis' in window) speechSynthesis.cancel(); }catch(e){}
+  try{ if (audioEl){ audioEl.pause(); } }catch(e){}
+  ORB.classList.remove('is-speaking');
+}
+
+function playOnline(text, lang, rate, o, onFail){
+  o = o || {};
+  let settled = false;
+  try{
+    /* 复用同一个音频对象，iOS 上解锁一次后就能反复播放 */
+    if (!audioEl) audioEl = new Audio();
+    const a = audioEl;
+    try{ a.pause(); }catch(e){}
+    a.src = audioUrl(text, lang);
+    a.preload = 'auto';
+    try{ a.playbackRate = rate; }catch(e){}
+    const fail = (err) => {
+      if (settled) return;
+      settled = true;
+      ORB.classList.remove('is-speaking');
+      if (err && err.name === 'NotAllowedError'){
+        setHint('浏览器拦了自动播放，点一下喇叭就行', true);
+      }
+      if (onFail) onFail(err);
+    };
+    a.onplaying = () => { settled = true; ORB.classList.add('is-speaking'); if (o.onStart) o.onStart(); };
+    a.onended = () => { ORB.classList.remove('is-speaking'); if (o.onEnd) o.onEnd(); };
+    a.onerror = () => fail(null);
+    const p = a.play();
+    if (p && typeof p.catch === 'function') p.catch(fail);
+    setTimeout(() => fail(null), 2600);
+  }catch(e){ if (onFail) onFail(e); }
+}
+
+function playTTS(text, lang, rate, o, onFail){
+  o = o || {};
+  if (!('speechSynthesis' in window)){ if (onFail) onFail(); return; }
+  let settled = false;
+  try{
+    loadVoices();
+    const u = new SpeechSynthesisUtterance(String(text));
+    u.lang = lang;
+    u.rate = rate;
+    u.pitch = 1;
+    u.volume = 1;
+    const v = pickVoice(lang);
+    if (v) u.voice = v;
+    u.onstart = () => { settled = true; ORB.classList.add('is-speaking'); if (o.onStart) o.onStart(); };
+    u.onend = () => { ORB.classList.remove('is-speaking'); if (o.onEnd) o.onEnd(); };
+    u.onerror = () => { ORB.classList.remove('is-speaking'); if (!settled){ settled = true; if (onFail) onFail(); } };
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+    setTimeout(() => { if (!settled){ settled = true; if (onFail) onFail(); } }, 1600);
+  }catch(e){ if (onFail) onFail(); }
+}
+
+function speakText(text, o){
+  o = o || {};
+  const lang = S.accent === 'uk' ? 'en-GB' : 'en-US';
+  const rate = S.slow ? 0.6 : 0.92;
+  const t = String(text);
+  stopSpeech();
+  const token = speakToken;
+
+  const giveUp = () => {
+    if (token !== speakToken) return;
+    ORB.classList.remove('is-speaking');
+    if (o.onError) o.onError(); else setHint('这台设备发不出声音，检查音量或网络', true);
+  };
+
+  if (canOnline(t)){
+    /* 单词、短语、短句：先走在线的真人发音，任何设备都能出声，失败再退回系统语音 */
+    const base = onlineText(t);
+    const alt = base.replace(/'/g, ' ').replace(/\s+/g, ' ').trim();
+    playOnline(base, lang, rate, o, () => {
+      if (token !== speakToken) return;
+      if (alt && alt !== base){
+        /* 带撇号的词（Let's 之类）接口不通时，去掉撇号再试一次 */
+        playOnline(alt, lang, rate, o, () => {
+          if (token !== speakToken) return;
+          playTTS(t, lang, rate, o, giveUp);
+        });
+      } else {
+        playTTS(t, lang, rate, o, giveUp);
+      }
+    });
+  } else {
+    /* 长句（比如设备测试那句）：系统语音优先，离线也行 */
+    playTTS(t, lang, rate, o, () => {
+      if (token !== speakToken) return;
+      playOnline(t.replace(/[,.!?;:'"()\\]/g, ' ').replace(/\s+/g, ' ').trim(), lang, rate, o, giveUp);
+    });
+  }
+}
+
+function speak(text){
+  speakText(text, null);
+  setHint(S.slow ? '慢速播放中' : '');
+}
+
+function setHint(t, warn){
+  const el = $('#audioHint');
+  el.textContent = t || '';
+  el.classList.toggle('warn', !!warn);
+}
+
+/* ============ 一轮 ============ */
+function shuffle(a){
+  const r = a.slice();
+  for (let i = r.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [r[i], r[j]] = [r[j], r[i]];
+  }
+  return r;
+}
+
+function startRound(pool, size){
+  clearTimers();
+  S.queue = shuffle(pool).slice(0, Math.min(size, pool.length));
+  S.i = 0; S.ok = 0; S.wrong = []; S.answered = false;
+  $('#endView').hidden = true;
+  $('#playView').hidden = false;
+  if (S.timed) startAllTimer();
+  renderQuestion();
+}
+
+function renderQuestion(){
+  S.w = S.queue[S.i];
+  S.answered = false;
+
+  const label = (S.unit === 'all' ? '全册混合' : (UNITS.find(u => u.id === S.unit).name + ' · ' + UNITS.find(u => u.id === S.unit).title))
+    + ' · 第 ' + S.level + ' 关';
+  $('#unitLabel').textContent = label;
+  $('#qNow').textContent = S.i + 1;
+  $('#qAll').textContent = S.queue.length;
+  $('#barFill').style.width = (S.i / S.queue.length * 100) + '%';
+
+  const input = $('#answer');
+  input.value = '';
+  input.className = '';
+  input.disabled = false;
+
+  $('#hintBox').hidden = true;
+  $('#peekBtn').textContent = '看提示 · 中文意思和首字母';
+
+  const fb = $('#fb');
+  fb.hidden = true; fb.className = 'feedback'; fb.innerHTML = '';
+
+  const btn = $('#mainBtn');
+  btn.textContent = '检查拼写';
+  btn.classList.remove('next');
+  $('#skipBtn').hidden = false;
+
+  setHint('');
+  speak(S.w[0]);
+  startQTimer();
+}
+
+function blankOf(en){
+  return en.split(/\s+/).map(w => {
+    let first = true;
+    return w.replace(/[A-Za-z]/g, ch => { if (first){ first = false; return ch; } return '_'; });
+  }).join('  /  ');
+}
+
+/* ============ 积分：答对一题 +1，答错扣 3，存在本机（可以为负） ============ */
+const POINTS_KEY = 'xed_points';
+let points = parseInt((function(){ try{ return localStorage.getItem(POINTS_KEY) || '0'; }catch(e){ return '0'; } })(), 10);
+if (!isFinite(points)) points = 0;
+
+function renderPoints(){
+  const el = $('#pointsNum');
+  if (el) el.textContent = points;
+}
+
+function addPoints(n){
+  points += n;
+  try{ localStorage.setItem(POINTS_KEY, String(points)); }catch(e){}
+  renderPoints();
+  const b = $('#pointsBadge');
+  if (b){
+    b.classList.remove('bump');
+    void b.offsetWidth;
+    b.classList.add('bump');
+    setTimeout(() => b.classList.remove('bump'), 420);
+  }
+}
+
+renderPoints();
+
+/* ============ 清除所有积分（密码校验，全按钮输入） ============ */
+const PW_TEXT = 'system';
+let pwBuf = '';
+
+function pwRender(){
+  $('#pwDots').textContent = pwBuf ? '•'.repeat(pwBuf.length) : '';
+}
+
+function toast(text){
+  const t = $('#shopToast');
+  t.innerHTML = text;
+  t.classList.add('on');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => {
+    t.classList.remove('on');
+    setTimeout(() => { t.innerHTML = '积分商城暂未开放<br>奖品还在准备中，先攒积分'; }, 300);
+  }, 2600);
+}
+
+(function buildPwKeys(){
+  const box = $('#pwKeys');
+  const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+  letters.forEach(ch => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pw-key';
+    b.textContent = ch.toUpperCase();
+    b.addEventListener('click', () => {
+      if (pwBuf.length >= 16) return;
+      pwBuf += ch;
+      $('#pwErr').textContent = '';
+      pwRender();
+    });
+    box.appendChild(b);
+  });
+  const del = document.createElement('button');
+  del.type = 'button';
+  del.className = 'pw-key';
+  del.textContent = '删除';
+  del.style.gridColumn = 'span 3';
+  del.addEventListener('click', () => {
+    pwBuf = pwBuf.slice(0, -1);
+    $('#pwErr').textContent = '';
+    pwRender();
+  });
+  box.appendChild(del);
+})();
+
+const PW_CONFIRMS = 20;
+let confirmLeft = PW_CONFIRMS;
+
+function moveConfirmBtn(){
+  const b = $('#pwConfirmBtn');
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  b.style.left = '50%';
+  b.style.top = '40%';
+  const w = b.offsetWidth || 150;
+  const h = b.offsetHeight || 50;
+  const minX = 14;
+  const maxX = Math.max(minX, vw - w - 14);
+  const minY = 112;
+  const maxY = Math.max(minY, vh - h - 96);
+  const x = minX + Math.random() * (maxX - minX);
+  const y = minY + Math.random() * (maxY - minY);
+  b.style.left = Math.round(x) + 'px';
+  b.style.top = Math.round(y) + 'px';
+}
+
+let sprintTimer = null;
+
+function startSprint(){
+  const b = $('#pwConfirmBtn');
+  b.classList.add('sprint');
+  $('#pwCount').textContent = '最后一关：抓住它！';
+  $('#pwTip').textContent = '按钮会疯狂乱窜，抓到才清零';
+  clearInterval(sprintTimer);
+  sprintTimer = setInterval(() => {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const w = b.offsetWidth || 100;
+    const h = b.offsetHeight || 40;
+    b.style.left = Math.round(10 + Math.random() * Math.max(1, vw - w - 20)) + 'px';
+    b.style.top = Math.round(96 + Math.random() * Math.max(1, vh - h - 150)) + 'px';
+  }, 110);
+}
+
+function stopSprint(){
+  clearInterval(sprintTimer);
+  sprintTimer = null;
+  $('#pwConfirmBtn').classList.remove('sprint');
+  $('#pwCount').classList.remove('catchable');
+}
+
+function finishClear(){
+  stopSprint();
+  points = 0;
+  try{ localStorage.setItem(POINTS_KEY, '0'); }catch(e){}
+  renderPoints();
+  pwStage(false);
+  toast('积分已清零');
+}
+
+function pwStage(showConfirm){
+  $('#pwMask').classList.toggle('on', !showConfirm);
+  $('#pwConfirm').classList.toggle('on', showConfirm);
+  if (!showConfirm) stopSprint();
+  else moveConfirmBtn();
+}
+
+function openPw(){
+  pwBuf = '';
+  pwRender();
+  $('#pwErr').textContent = '';
+  pwStage(false);
+  $('#pwMask').classList.add('on');
+}
+
+$('#clearFab').addEventListener('click', openPw);
+$('#pwCancel').addEventListener('click', () => {
+  pwStage(false);
+});
+$('#pwSelfCancel').addEventListener('click', () => {
+  pwStage(false);
+});
+$('#pwOk').addEventListener('click', () => {
+  if (pwBuf.toLowerCase() === PW_TEXT){
+    confirmLeft = PW_CONFIRMS;
+    $('#pwCount').textContent = '还将确认 ' + PW_CONFIRMS + ' 次';
+    $('#pwTip').textContent = '按钮会到处乱跑，点满 20 次才清零';
+    $('#pwConfirmBtn').textContent = '确认清零';
+    $('#pwErr').textContent = '';
+    pwStage(true);
+  } else {
+    $('#pwErr').textContent = '密码不对，再试一次';
+    pwBuf = '';
+    pwRender();
+  }
+});
+$('#pwConfirmBtn').addEventListener('click', () => {
+  if (confirmLeft <= 1){
+    finishClear();
+    return;
+  }
+  confirmLeft--;
+  if (confirmLeft === 1){
+    startSprint();
+    return;
+  }
+  $('#pwCount').textContent = '还将确认 ' + confirmLeft + ' 次';
+  moveConfirmBtn();
+});
+
+/* 最后一关：直接点上面那行字就算抓住 */
+$('#pwCount').addEventListener('click', () => {
+  if (!$('#pwConfirm').classList.contains('on')) return;
+  if (confirmLeft === 1){
+    finishClear();
+  }
+});
+
+function check(){
+  const input = $('#answer');
+  const val = norm(input.value);
+  if (!val){
+    setHint('先写一个答案吧（不会可以点“跳过”）', true);
+    input.focus();
+    return;
+  }
+
+  S.answered = true;
+  if (tQTimer){ clearInterval(tQTimer); tQTimer = null; }
+  const right = val === norm(S.w[0]);
+  const fb = $('#fb');
+  fb.hidden = false;
+
+  if (right){
+    S.ok++;
+    addPoints(1);
+    input.className = 'right';
+    fb.className = 'feedback ok';
+    fb.innerHTML = '<span class="ans">' + S.w[0] + '</span>拼对了！<span class="zh">' + S.w[1] + '</span>';
+  } else {
+    S.wrong.push(S.w);
+    addPoints(-3);
+    input.className = 'wrong';
+    fb.className = 'feedback no';
+    fb.innerHTML = '正确答案是 <span class="ans">' + S.w[0] + '</span><span class="zh">' + S.w[1] + '</span>';
+    speak(S.w[0]);
+  }
+
+  const btn = $('#mainBtn');
+  btn.textContent = '下一题';
+  btn.classList.add('next');
+  $('#skipBtn').hidden = true;
+  input.disabled = true;
+  btn.focus();
+}
+
+function nextQuestion(){
+  if (tQTimer){ clearInterval(tQTimer); tQTimer = null; }
+  S.i++;
+  if (S.i >= S.queue.length){ finish(); return; }
+  renderQuestion();
+}
+
+function finish(){
+  clearTimers();
+  $('#barFill').style.width = '100%';
+  $('#playView').hidden = true;
+  $('#endView').hidden = false;
+
+  const pct = Math.round(S.ok / S.queue.length * 100);
+  $('#endPct').textContent = pct;
+  $('#endLine').textContent = '第 ' + S.level + ' 关 · 答对 ' + S.ok + ' / ' + S.queue.length + ' 个单词';
+
+  let title = '再来一遍会更稳';
+  if (pct === 100) title = '全部正确，太厉害了！';
+  else if (pct >= 80) title = '这一组很棒！';
+  else if (pct >= 60) title = '不错，再过一遍错词';
+  $('#endTitle').textContent = title;
+
+  const block = $('#wrongBlock');
+  const list = $('#wrongList');
+  list.innerHTML = '';
+  if (S.wrong.length){
+    block.hidden = false;
+    $('#wrongBtn').hidden = false;
+    const seen = new Set();
+    S.wrong.forEach(w => {
+      const k = w[0];
+      if (seen.has(k)) return;
+      seen.add(k);
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'wchip';
+      b.innerHTML = '<span>' + w[0] + '</span><small>' + w[1] + '</small>';
+      b.addEventListener('click', () => speak(w[0]));
+      list.appendChild(b);
+    });
+  } else {
+    block.hidden = true;
+    $('#wrongBtn').hidden = true;
+  }
+}
+
+/* ============ 事件 ============ */
+document.addEventListener('DOMContentLoaded', () => {
+  ORB = $('#orb');
+  buildChips();
+  buildLevels();
+
+  $('#orb').addEventListener('click', () => { if (S.w) speak(S.w[0]); });
+  $('#replay').addEventListener('click', () => { if (S.w) speak(S.w[0]); });
+
+  $('#slowBtn').addEventListener('click', e => {
+    S.slow = !S.slow;
+    e.currentTarget.classList.toggle('on', S.slow);
+    if (S.w) speak(S.w[0]);
+  });
+
+  $('#accentBtn').addEventListener('click', e => {
+    S.accent = S.accent === 'uk' ? 'us' : 'uk';
+    e.currentTarget.textContent = S.accent === 'uk' ? '英音 UK' : '美音 US';
+    if (S.w) speak(S.w[0]);
+  });
+
+  $('#peekBtn').addEventListener('click', () => {
+    const box = $('#hintBox');
+    if (box.hidden && S.w){
+      $('#hintZh').textContent = S.w[1];
+      $('#hintBlank').textContent = blankOf(S.w[0]);
+      box.hidden = false;
+      $('#peekBtn').textContent = '收起提示';
+    } else {
+      box.hidden = true;
+      $('#peekBtn').textContent = '看提示 · 中文意思和首字母';
+    }
+  });
+
+  $('#mainBtn').addEventListener('click', () => { S.answered ? nextQuestion() : check(); });
+
+  $('#skipBtn').addEventListener('click', () => {
+    if (!S.w) return;
+    S.answered = true;
+    if (tQTimer){ clearInterval(tQTimer); tQTimer = null; }
+    S.wrong.push(S.w);
+    const fb = $('#fb');
+    fb.hidden = false;
+    fb.className = 'feedback no';
+    fb.innerHTML = '正确答案是 <span class="ans">' + S.w[0] + '</span><span class="zh">' + S.w[1] + '</span>';
+    $('#mainBtn').textContent = '下一题';
+    $('#mainBtn').classList.add('next');
+    $('#skipBtn').hidden = true;
+    $('#answer').disabled = true;
+  });
+
+  /* 触摸屏：点输入框后把卡片往上挪，避免屏幕键盘挡住按钮 */
+  $('#answer').addEventListener('focus', () => {
+    setTimeout(() => {
+      const card = document.querySelector('.card');
+      if (card) card.scrollIntoView({ block:'nearest', behavior:'smooth' });
+    }, 350);
+  });
+
+  /* ============ 积分商城 ============ */
+  $('#shopFab').addEventListener('click', () => {
+    toast('积分商城暂未开放<br>奖品还在准备中，先攒积分');
+  });
+
+  $('#againBtn').addEventListener('click', () => startLevel(S.level));
+  $('#wrongBtn').addEventListener('click', () => { S.timed = false; startRound(S.wrong.slice(), S.wrong.length); });
+  $('#backBtn').addEventListener('click', () => {
+    window.scrollTo({ top:0, behavior:'smooth' });
+    $('#endView').hidden = true;
+    $('#playView').hidden = false;
+    setHint('在上面选一个单元，开始新的一组');
+  });
+
+  /* ============ 设备测试 ============ */
+  const TEST_KEYS = ['z','x','c','v','b','n','m'];
+
+  function buildTestKeys(){
+    const box = $('#tpKeys');
+    box.innerHTML = '';
+    TEST_KEYS.forEach(k => {
+      const d = document.createElement('span');
+      d.className = 'tp-key';
+      d.dataset.k = k;
+      d.textContent = k.toUpperCase();
+      box.appendChild(d);
+    });
+  }
+
+  function refreshTestKeys(){
+    const val = ($('#tpInput').value || '').toLowerCase().replace(/[^a-z]/g, '');
+    let matched = 0;
+    while (matched < TEST_KEYS.length && val[matched] === TEST_KEYS[matched]) matched++;
+
+    document.querySelectorAll('.tp-key').forEach(el => {
+      const i = TEST_KEYS.indexOf(el.dataset.k);
+      el.classList.toggle('ok', i < matched);
+      el.classList.toggle('now', i === matched);
+    });
+
+    const note = $('#tpNote');
+    if (matched >= TEST_KEYS.length){
+      note.textContent = '七个字母都对，键盘正常';
+      note.classList.remove('warn');
+    } else if (val.length > matched){
+      note.textContent = '第 ' + (matched + 1) + ' 个字母不对，应该是 ' + TEST_KEYS[matched].toUpperCase();
+      note.classList.add('warn');
+    } else {
+      note.textContent = '已打出 ' + matched + ' / 7';
+      note.classList.remove('warn');
+    }
+  }
+
+  $('#testFab').addEventListener('click', e => {
+    const panel = $('#testPanel');
+    const open = panel.hidden;
+    panel.hidden = !open;
+    e.currentTarget.classList.toggle('on', open);
+    e.currentTarget.setAttribute('aria-expanded', open ? 'true' : 'false');
+    e.currentTarget.textContent = open ? '收起测试' : '设备测试';
+  });
+
+  $('#spkBtn').addEventListener('click', () => {
+    const note = $('#spkNote');
+    stopSpeech();
+    note.textContent = '正在播放…';
+    note.classList.remove('warn');
+    speakText('This is a speaker test. One, two, three. Can you hear me?', {
+      onStart: () => { note.textContent = '正在播放…'; note.classList.remove('warn'); },
+      onEnd: () => { note.textContent = '播放结束，听见了就说明扬声器正常'; note.classList.remove('warn'); },
+      onError: () => { note.textContent = '没声音：检查音量、系统语音包或网络'; note.classList.add('warn'); }
+    });
+  });
+
+  $('#tpInput').addEventListener('input', refreshTestKeys);
+  $('#tpClear').addEventListener('click', () => {
+    $('#tpInput').value = '';
+    refreshTestKeys();
+  });
+
+  buildTestKeys();
+  refreshTestKeys();
+
+  /* 默认先给一组，等用户点单元再换 */
+  startRound(queueOf('all'), 10);
+
+  checkUpdate();
+});
+
+/* ============ 联网检查更新 ============ */
+/* 直接读 GitHub 仓库的「最新发布（Latest Release）」：发新版只要在 Releases 里发一个 tag（如 1.0.2），
+   程序这边全自动比对，不用再上传任何版本文件 */
+const APP_VERSION = '1.0.3';
+const GH_REPO = 'yaya404Z/xiaoxinduoword-dictation-g4';
+const UPDATE_URL = '';   /* 备用：若 Releases 取不到，才用 version.js 这种旧方式（可留空） */
+
+let pendingUpdate = null;
+
+function verParts(v){
+  return String(v || '').replace(/^v/i, '').split('.').map(n => parseInt(n, 10) || 0);
+}
+
+function isNewer(remote, mine){
+  const a = verParts(remote), b = verParts(mine);
+  for (let i = 0; i < Math.max(a.length, b.length); i++){
+    const x = a[i] || 0, y = b[i] || 0;
+    if (x !== y) return x > y;
+  }
+  return false;
+}
+
+function applyUpdate(info){
+  if (!info) return;
+  pendingUpdate = info;
+  pendingUpdate.version = String(info.version || '').replace(/^v/i, '');
+
+  /* 本机已经是最新版：顶上不打扰，只在小字里说明 */
+  $('#verLine').textContent = 'v' + APP_VERSION + ' · 已是最新版';
+
+  if (!isNewer(pendingUpdate.version, APP_VERSION)) return;
+  if (sessionStorage.getItem('xed_update_skip') === pendingUpdate.version) return;
+
+  $('#updateTxt').innerHTML =
+    '发现新版本 <b>v' + pendingUpdate.version + '</b>（你现在是 v' + APP_VERSION + '），要不要升级一下？';
+  $('#updateBar').classList.add('on');
+  document.body.style.paddingTop = ($('#updateBar').offsetHeight || 46) + 12 + 'px';
+}
+
+function dismissUpdate(remember){
+  $('#updateBar').classList.remove('on');
+  document.body.style.paddingTop = '';
+  if (remember && pendingUpdate) {
+    try { sessionStorage.setItem('xed_update_skip', pendingUpdate.version); } catch(e){}
+  }
+}
+
+function loadVersionScript(url){
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now();
+    s.onload = () => {
+      if (window.XED_VER) resolve(window.XED_VER);
+      else reject(new Error('no data'));
+    };
+    s.onerror = () => reject(new Error('load fail'));
+    document.head.appendChild(s);
+    setTimeout(() => reject(new Error('timeout')), 5000);
+  });
+}
+
+function pickDownload(assets){
+  /* 安卓端优先拿 apk，电脑端优先拿 exe；找不到就退到第一个附件 */
+  const list = assets || [];
+  const want = (window.AndroidTTS ? '.apk' : '.exe');
+  const hit = list.filter(a => String(a.name || '').toLowerCase().endsWith(want));
+  const best = hit.filter(a => String(a.name || '').toLowerCase().indexOf('setup') < 0)[0] || hit[0] || list[0];
+  return best ? best.browser_download_url : '';
+}
+
+/* 从仓库文件列表里找带版本号的最新安装包：setup-1.0.3.exe / app-1.0.3.apk */
+function scanRepoFiles(files){
+  const want = window.AndroidTTS ? 'apk' : 'exe';
+  let best = null;
+  (files || []).forEach(f => {
+    const m = String(f.name || '').match(/^[a-z0-9_-]*-([0-9]+(?:\.[0-9]+){1,2})\.(exe|apk)$/i);
+    if (!m) return;
+    if (m[2].toLowerCase() !== want) return;
+    const v = m[1];
+    if (!best || isNewer(v, best.version)) best = { version: v, file: f.name };
+  });
+  if (!best) return null;
+  best.url = 'https://cdn.jsdelivr.net/gh/' + GH_REPO + '@main/' + encodeURIComponent(best.file);
+  best.page = 'https://github.com/' + GH_REPO;
+  return best;
+}
+
+function checkUpdate(){
+  /* 先看「最新发布」：里面有版本号和安装包直链，最可靠 */
+  fetch('https://api.github.com/repos/' + GH_REPO + '/releases/latest',
+    { cache: 'no-store', headers: { 'Accept': 'application/vnd.github+json' } })
+    .then(r => r.ok ? r.json() : null)
+    .then(d => {
+      if (d && d.tag_name) {
+        const want = window.AndroidTTS ? '.apk' : '.exe';
+        const hit = (d.assets || []).filter(a => String(a.name || '').toLowerCase().endsWith(want));
+        applyUpdate({ version: d.tag_name, url: (hit[0] || {}).browser_download_url || d.html_url, page: d.html_url });
+        return;
+      }
+      throw new Error('no release');
+    })
+    .catch(() => {
+      /* 退一步：扫仓库里带版本号的文件（setup-1.0.2.exe / app-1.0.2.apk） */
+      fetch('https://api.github.com/repos/' + GH_REPO + '/contents?t=' + Date.now(),
+        { cache: 'no-store', headers: { 'Accept': 'application/vnd.github+json' } })
+        .then(r => r.ok ? r.json() : null)
+        .then(list => {
+          const hit = scanRepoFiles(list);
+          if (hit) applyUpdate(hit);
+        })
+        .catch(() => {
+          if (UPDATE_URL) loadVersionScript(UPDATE_URL).then(applyUpdate).catch(() => {});
+        });
+    });
+}
+
+$('#updateGo').addEventListener('click', () => {
+  const u = pendingUpdate && (pendingUpdate.page || pendingUpdate.url);
+  if (!u) return;
+  try{ if (window.AndroidTTS && AndroidTTS.openUrl){ AndroidTTS.openUrl(u); return; } }catch(e){}
+  const w = window.open(u, '_blank');
+  if (!w) { try{ location.href = u; }catch(e){} }
+});
+
+$('#updateLater').addEventListener('click', () => dismissUpdate(true));
+</script>
+</body>
+</html>
