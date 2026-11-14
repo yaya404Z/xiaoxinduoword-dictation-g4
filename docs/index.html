@@ -248,6 +248,18 @@
 
   .foot{text-align:center;font-size:11.5px;color:#A2947F;margin-top:22px;line-height:1.7}
 
+  /* ---------- 检查更新 ---------- */
+  .verbar{display:flex;align-items:center;gap:10px;margin:0 2px 10px}
+  .verbtn{
+    appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink-dim);
+    border-radius:11px;padding:9px 15px;font-size:12.5px;line-height:1.1;font-family:inherit;
+    cursor:pointer;min-height:44px;min-width:100px;touch-action:manipulation;
+    transition:.16s ease;-webkit-tap-highlight-color:transparent;
+  }
+  .verbtn:hover{border-color:#DCCBB0;color:var(--ink)}
+  .verbtn:active{transform:translateY(1px)}
+  .vertxt{font-size:11.5px;color:#A2947F;letter-spacing:.02em}
+
   /* ---------- 设备测试（右下角） ---------- */
   .test-fab{
     position:fixed;right:16px;bottom:16px;z-index:30;
@@ -595,6 +607,11 @@
     <p class="sub">外研版（三起）2024 新教材 · 四年级上册 Unit 1–6 · 听发音，填空拼写</p>
   </header>
 
+  <div class="verbar">
+    <button class="verbtn" id="verBtn" type="button">检查更新</button>
+    <span class="vertxt" id="verLine">v1.0.3</span>
+  </div>
+
   <div class="units" id="units" role="tablist" aria-label="选择单元"></div>
   <div class="levels" id="levels" role="tablist" aria-label="选择关卡"></div>
 
@@ -644,7 +661,7 @@
 
       <div class="feedback" id="fb" hidden></div>
     </div>
-    <p class="foot">拼错没关系，错词会记在最后。<br><span id="verLine">v1.0.0</span></p>
+    <p class="foot">拼错没关系，错词会记在最后。</p>
   </section>
 
   <section id="endView" aria-label="本轮结果" hidden>
@@ -1601,7 +1618,7 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ============ 联网检查更新 ============ */
 /* 直接读 GitHub 仓库的「最新发布（Latest Release）」：发新版只要在 Releases 里发一个 tag（如 1.0.2），
    程序这边全自动比对，不用再上传任何版本文件 */
-const APP_VERSION = '1.0.3';
+const APP_VERSION = '1.0.4';
 const GH_REPO = 'yaya404Z/xiaoxinduoword-dictation-g4';
 const UPDATE_URL = '';   /* 备用：若 Releases 取不到，才用 version.js 这种旧方式（可留空） */
 
@@ -1620,15 +1637,18 @@ function isNewer(remote, mine){
   return false;
 }
 
-function applyUpdate(info){
+function applyUpdate(info, manual){
   if (!info) return;
   pendingUpdate = info;
   pendingUpdate.version = String(info.version || '').replace(/^v/i, '');
 
+  const hasNew = isNewer(pendingUpdate.version, APP_VERSION);
   /* 本机已经是最新版：顶上不打扰，只在小字里说明 */
-  $('#verLine').textContent = 'v' + APP_VERSION + ' · 已是最新版';
+  $('#verLine').textContent = hasNew
+    ? 'v' + APP_VERSION + ' · 有新版本 v' + pendingUpdate.version
+    : 'v' + APP_VERSION + ' · 已是最新版';
 
-  if (!isNewer(pendingUpdate.version, APP_VERSION)) return;
+  if (!hasNew) return;
   if (sessionStorage.getItem('xed_update_skip') === pendingUpdate.version) return;
 
   $('#updateTxt').innerHTML =
@@ -1685,7 +1705,11 @@ function scanRepoFiles(files){
   return best;
 }
 
-function checkUpdate(){
+function checkUpdate(manual){
+  const fail = () => {
+    if (manual) $('#verLine').textContent = 'v' + APP_VERSION + ' · 检查失败，网络不通';
+    else $('#verLine').textContent = 'v' + APP_VERSION;
+  };
   /* 先看「最新发布」：里面有版本号和安装包直链，最可靠 */
   fetch('https://api.github.com/repos/' + GH_REPO + '/releases/latest',
     { cache: 'no-store', headers: { 'Accept': 'application/vnd.github+json' } })
@@ -1694,7 +1718,7 @@ function checkUpdate(){
       if (d && d.tag_name) {
         const want = window.AndroidTTS ? '.apk' : '.exe';
         const hit = (d.assets || []).filter(a => String(a.name || '').toLowerCase().endsWith(want));
-        applyUpdate({ version: d.tag_name, url: (hit[0] || {}).browser_download_url || d.html_url, page: d.html_url });
+        applyUpdate({ version: d.tag_name, url: (hit[0] || {}).browser_download_url || d.html_url, page: d.html_url }, manual);
         return;
       }
       throw new Error('no release');
@@ -1706,10 +1730,12 @@ function checkUpdate(){
         .then(r => r.ok ? r.json() : null)
         .then(list => {
           const hit = scanRepoFiles(list);
-          if (hit) applyUpdate(hit);
+          if (hit) applyUpdate(hit, manual);
+          else fail();
         })
         .catch(() => {
-          if (UPDATE_URL) loadVersionScript(UPDATE_URL).then(applyUpdate).catch(() => {});
+          if (UPDATE_URL) loadVersionScript(UPDATE_URL).then(applyUpdate).catch(fail);
+          else fail();
         });
     });
 }
@@ -1723,6 +1749,12 @@ $('#updateGo').addEventListener('click', () => {
 });
 
 $('#updateLater').addEventListener('click', () => dismissUpdate(true));
+
+$('#verBtn').addEventListener('click', () => {
+  const t = $('#verLine');
+  t.textContent = 'v' + APP_VERSION + ' · 正在检查…';
+  checkUpdate(true);
+});
 </script>
 </body>
 </html>
